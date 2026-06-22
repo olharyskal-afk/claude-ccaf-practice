@@ -1,0 +1,35 @@
+name: Claude Code CI Review
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run Claude Code headless
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          claude -p "Перевір структуру проекту та поверни короткий звіт" --output-format json > claude-output.log 2>&1 || true
+          cat claude-output.log
+
+      - name: Upload log
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-review-log
+          path: claude-output.log
