@@ -1,0 +1,9 @@
+{
+  "name": "prompt-engineering",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "classifier.js",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.105.0"
+  }
+}
