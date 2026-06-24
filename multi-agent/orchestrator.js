@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import fs from "fs";
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY
@@ -170,9 +171,12 @@ function executeTool(toolName, toolInput) {
       if (recs.length === 0) recs.push("Код якісний, продовжуй в тому ж дусі!");
       return { recommendations: recs };
 
-    case "save_report":
+    //case "save_report":
+     // return { saved: true, path: `./${toolInput.filename}`, size_bytes: toolInput.report.length };
+case "save_report":
+      fs.writeFileSync(toolInput.filename, toolInput.report);
       return { saved: true, path: `./${toolInput.filename}`, size_bytes: toolInput.report.length };
-
+    
     case "get_timestamp":
       return { timestamp: new Date().toISOString(), date: new Date().toLocaleDateString("uk-UA") };
 
