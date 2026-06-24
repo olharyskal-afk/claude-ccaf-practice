@@ -29,13 +29,75 @@ server.tool(
 server.tool(
   "greet",
   "Вітає користувача по імені",
-  { name: z.string().describe("Ім'я користувача") },
-  async ({ name }) => ({
-    content: [{
-      type: "text",
-      text: `Привіт, ${name}! MCP сервер працює.`
-    }]
-  })
+  {
+    name: z.string().min(1).max(100).describe("Ім'я користувача"),
+    language: z.enum(["uk", "en", "ru"]).default("uk").describe("Мова привітання")
+  },
+  async ({ name, language }) => {
+    const greetings = {
+      uk: `Привіт, ${name}! MCP сервер працює.`,
+      en: `Hello, ${name}! MCP server is running.`,
+      ru: `Привет, ${name}! MCP сервер работает.`
+    };
+    return {
+      content: [{ type: "text", text: greetings[language] }]
+    };
+  }
+);
+
+// Tool 3: calculate
+server.tool(
+  "calculate",
+  "Виконує математичні операції над двома числами",
+  {
+    a: z.number().describe("Перше число"),
+    b: z.number().describe("Друге число"),
+    operation: z.enum(["add", "subtract", "multiply", "divide"]).describe("Операція: add, subtract, multiply, divide")
+  },
+  async ({ a, b, operation }) => {
+    let result;
+    switch (operation) {
+      case "add":      result = a + b; break;
+      case "subtract": result = a - b; break;
+      case "multiply": result = a * b; break;
+      case "divide":
+        if (b === 0) return {
+          content: [{ type: "text", text: JSON.stringify({ error: "Division by zero", code: "DIVISION_BY_ZERO" }) }],
+          isError: true
+        };
+        result = a / b;
+        break;
+    }
+    return {
+      content: [{
+        type: "text",
+        text: JSON.stringify({ a, b, operation, result }, null, 2)
+      }]
+    };
+  }
+);
+
+// Tool 4: validate_email
+server.tool(
+  "validate_email",
+  "Перевіряє чи є email адреса валідною",
+  {
+    email: z.string().email().describe("Email адреса для перевірки")
+  },
+  async ({ email }) => {
+    const domain = email.split("@")[1];
+    return {
+      content: [{
+        type: "text",
+        text: JSON.stringify({
+          email,
+          valid: true,
+          domain,
+          checked_at: new Date().toISOString()
+        }, null, 2)
+      }]
+    };
+  }
 );
 
 // Resource: project_rules
@@ -52,4 +114,4 @@ server.resource(
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
-console.error("MCP сервер запущено!");
+console.error("MCP сервер запущено! Tools: get_project_info, greet, calculate, validate_email");
